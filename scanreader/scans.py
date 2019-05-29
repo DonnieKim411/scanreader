@@ -18,8 +18,8 @@ BaseScan
                 Scan2018b
     ScanMultiRoi
 """
-from tifffile import TiffFile
-from tifffile.tifffile import matlabstr2py
+from .tifffile import TiffFile
+from .tifffile import matlabstr2py
 import numpy as np
 import re
 import itertools

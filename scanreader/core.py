@@ -7,7 +7,7 @@ Example:
     for field in scan:
         #process field
 """
-from tifffile import TiffFile
+from .tifffile import TiffFile
 from glob import glob
 from os import path
 import numpy as np
