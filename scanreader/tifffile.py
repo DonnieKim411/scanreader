@@ -7454,41 +7454,6 @@ def read_metaseries_catalog(fh):
     raise NotImplementedError()
 
 
-def json_description(shape, **metadata):
-    """Return JSON image description from data shape and other metadata.
-
-    Return UTF-8 encoded JSON.
-
-    >>> json_description((256, 256, 3), axes='YXS')  # doctest: +SKIP
-    b'{"shape": [256, 256, 3], "axes": "YXS"}'
-
-    """
-    metadata.update(shape=shape)
-    return json.dumps(metadata)  # .encode('utf-8')
-
-
-def json_description_metadata(description):
-    """Return metatata from JSON formated image description as dict.
-
-    Raise ValuError if description is of unknown format.
-
-    >>> description = '{"shape": [256, 256, 3], "axes": "YXS"}'
-    >>> json_description_metadata(description)  # doctest: +SKIP
-    {'shape': [256, 256, 3], 'axes': 'YXS'}
-    >>> json_description_metadata('shape=(256, 256, 3)')
-    {'shape': (256, 256, 3)}
-
-    """
-    if description[:6] == 'shape=':
-        # old-style 'shaped' description; not JSON
-        shape = tuple(int(i) for i in description[7:-1].split(','))
-        return dict(shape=shape)
-    if description[:1] == '{' and description[-1:] == '}':
-        # JSON description
-        return json.loads(description)
-    raise ValueError('invalid JSON image description', description)
-
-
 def fluoview_description_metadata(description, ignoresections=None):
     """Return metatata from FluoView image description as dict.
 
