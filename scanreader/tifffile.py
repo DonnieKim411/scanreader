@@ -7454,50 +7454,6 @@ def read_metaseries_catalog(fh):
     raise NotImplementedError()
 
 
-def pilatus_description_metadata(description):
-    """Return metatata from Pilatus image description as dict.
-
-    Return metadata from Pilatus pixel array detectors by Dectris, created
-    by camserver or TVX software.
-
-    >>> pilatus_description_metadata('# Pixel_size 172e-6 m x 172e-6 m')
-    {'Pixel_size': (0.000172, 0.000172)}
-
-    """
-    result = {}
-    if not description.startswith('# '):
-        return result
-    for c in '#:=,()':
-        description = description.replace(c, ' ')
-    for line in description.split('\n'):
-        if line[:2] != '  ':
-            continue
-        line = line.split()
-        name = line[0]
-        if line[0] not in TIFF.PILATUS_HEADER:
-            try:
-                result['DateTime'] = datetime.datetime.strptime(
-                    ' '.join(line), '%Y-%m-%dT%H %M %S.%f')
-            except Exception:
-                result[name] = ' '.join(line[1:])
-            continue
-        indices, dtype = TIFF.PILATUS_HEADER[line[0]]
-        if isinstance(indices[0], slice):
-            # assumes one slice
-            values = line[indices[0]]
-        else:
-            values = [line[i] for i in indices]
-        if dtype is float and values[0] == 'not':
-            values = ['NaN']
-        values = tuple(dtype(v) for v in values)
-        if dtype == str:
-            values = ' '.join(values)
-        elif len(values) == 1:
-            values = values[0]
-        result[name] = values
-    return result
-
-
 def svs_description_metadata(description):
     """Return metatata from Aperio image description as dict.
 
