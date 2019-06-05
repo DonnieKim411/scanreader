@@ -651,8 +651,6 @@ def imread(files, **kwargs):
             return imseq.asarray(**kwargs)
 
 
-
-
 def memmap(filename, shape=None, dtype=None, page=None, series=0, mode='r+',
            **kwargs):
     """Return memory-mapped numpy array stored in TIFF file.
