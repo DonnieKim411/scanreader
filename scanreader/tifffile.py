@@ -7454,31 +7454,6 @@ def read_metaseries_catalog(fh):
     raise NotImplementedError()
 
 
-def svs_description_metadata(description):
-    """Return metatata from Aperio image description as dict.
-
-    The Aperio image description format is unspecified. Expect failures.
-
-    >>> svs_description_metadata('Aperio Image Library v1.0')
-    {'Aperio Image Library': 'v1.0'}
-
-    """
-    if not description.startswith('Aperio Image Library '):
-        raise ValueError('invalid Aperio image description')
-    result = {}
-    lines = description.split('\n')
-    key, value = lines[0].strip().rsplit(None, 1)  # 'Aperio Image Library'
-    result[key.strip()] = value.strip()
-    if len(lines) == 1:
-        return result
-    items = lines[1].split('|')
-    result[''] = items[0].strip()  # TODO: parse this?
-    for item in items[1:]:
-        key, value = item.split(' = ')
-        result[key.strip()] = astype(value.strip())
-    return result
-
-
 def stk_description_metadata(description):
     """Return metadata from MetaMorph image description as list of dict.
 
