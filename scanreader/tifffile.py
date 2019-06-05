@@ -7454,40 +7454,6 @@ def read_metaseries_catalog(fh):
     raise NotImplementedError()
 
 
-def stk_description_metadata(description):
-    """Return metadata from MetaMorph image description as list of dict.
-
-    The MetaMorph image description format is unspecified. Expect failures.
-
-    """
-    description = description.strip()
-    if not description:
-        return []
-    try:
-        description = bytes2str(description)
-    except UnicodeDecodeError as exc:
-        log.warning('stk_description_metadata: %s: %s',
-                    exc.__class__.__name__, exc)
-        return []
-    result = []
-    for plane in description.split('\x00'):
-        d = {}
-        for line in plane.split('\r\n'):
-            line = line.split(':', 1)
-            if len(line) > 1:
-                name, value = line
-                d[name.strip()] = astype(value.strip())
-            else:
-                value = line[0].strip()
-                if value:
-                    if '' in d:
-                        d[''].append(value)
-                    else:
-                        d[''] = [value]
-        result.append(d)
-    return result
-
-
 def metaseries_description_metadata(description):
     """Return metatata from MetaSeries image description as dict."""
     if not description.startswith('<MetaData>'):
