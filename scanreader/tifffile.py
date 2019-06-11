@@ -2241,6 +2241,43 @@ class TiffPages(object):
 
         if maxpages is None:
             maxpages = 2**22
+        
+        # if self.parent.is_scanimage:
+
+        #     # seek very first offset
+        #     fh.seek(offset)
+
+        #     try:
+        #         tagno = unpack(tagnoformat, fh.read(tagnosize))[0]
+        #         if tagno > 4096:
+        #             raise TiffFileError(
+        #                 'suspicious number of tags: %i' % tagno)
+        #     except Exception:
+        #         log.warning('TiffPages: corrupted tag list of page %i @ %i',
+        #                     lenpages, offset)
+        #         del pages[-1]
+        #         lenpages -= 1
+        #         self._indexed = True
+        #         break
+
+        #     # read offset to next page
+        #     offset = unpack(offsetformat, fh.read(offsetsize))[0]
+
+        #     if offset == 0: # flag indicating the last page
+        #         self._indexed = True
+        #         break
+        #     if offset >= fh.size:
+        #         log.warning('TiffPages: invalid page offset (%i)', offset)
+        #         self._indexed = True
+        #         break
+            
+        #     offset_unit = page.offset - offset
+
+        #     #now obtain the number of pages
+        #     num_pages = (self.parent._fh.size - page.offset)/ offset_unit
+        #     pages =[page.offset + offset_unit*i for i in range(num_pages)]
+        #     pages[0] = page
+                
         while lenpages < maxpages:
             # read offsets to pages from file until index is reached
             fh.seek(offset)
@@ -2262,7 +2299,7 @@ class TiffPages(object):
 
             # read offset to next page
             offset = unpack(offsetformat, fh.read(offsetsize))[0]
-            if offset == 0:
+            if offset == 0: # flag indicating the last page
                 self._indexed = True
                 break
             if offset >= fh.size:
@@ -2284,6 +2321,7 @@ class TiffPages(object):
         if index >= lenpages:
             raise IndexError('index out of range')
 
+        # figure out what this line does
         page = pages[index]
         fh.seek(page if isinstance(page, inttypes) else page.offset)
 
