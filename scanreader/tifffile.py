@@ -2238,50 +2238,12 @@ class TiffPages(object):
 
         page = pages[-1]
         offset = page if isinstance(page, inttypes) else page.offset
-
-        if maxpages is None:
-            maxpages = 2**22
         
-        # if self.parent.is_scanimage:
+        if self.parent.is_scanimage:
 
-        #     # seek very first offset
-        #     fh.seek(offset)
-
-        #     try:
-        #         tagno = unpack(tagnoformat, fh.read(tagnosize))[0]
-        #         if tagno > 4096:
-        #             raise TiffFileError(
-        #                 'suspicious number of tags: %i' % tagno)
-        #     except Exception:
-        #         log.warning('TiffPages: corrupted tag list of page %i @ %i',
-        #                     lenpages, offset)
-        #         del pages[-1]
-        #         lenpages -= 1
-        #         self._indexed = True
-        #         break
-
-        #     # read offset to next page
-        #     offset = unpack(offsetformat, fh.read(offsetsize))[0]
-
-        #     if offset == 0: # flag indicating the last page
-        #         self._indexed = True
-        #         break
-        #     if offset >= fh.size:
-        #         log.warning('TiffPages: invalid page offset (%i)', offset)
-        #         self._indexed = True
-        #         break
-            
-        #     offset_unit = page.offset - offset
-
-        #     #now obtain the number of pages
-        #     num_pages = (self.parent._fh.size - page.offset)/ offset_unit
-        #     pages =[page.offset + offset_unit*i for i in range(num_pages)]
-        #     pages[0] = page
-                
-        while lenpages < maxpages:
-            # read offsets to pages from file until index is reached
+            # seek very first offset
             fh.seek(offset)
-            # skip tags
+
             try:
                 tagno = unpack(tagnoformat, fh.read(tagnosize))[0]
                 if tagno > 4096:
@@ -2293,35 +2255,79 @@ class TiffPages(object):
                 del pages[-1]
                 lenpages -= 1
                 self._indexed = True
-                break
+                raise
+
             self._nextpageoffset = offset + tagnosize + tagno * tagsize
             fh.seek(self._nextpageoffset)
 
-            # read offset to next page
+            # read offset to the next page
             offset = unpack(offsetformat, fh.read(offsetsize))[0]
-            if offset == 0: # flag indicating the last page
-                self._indexed = True
-                break
-            if offset >= fh.size:
-                log.warning('TiffPages: invalid page offset (%i)', offset)
-                self._indexed = True
-                break
 
-            pages.append(offset)
-            lenpages += 1
-            if 0 <= index < lenpages:
-                break
+            # calculate difference (in bytes) between two pages
+            offset_unit = offset - page.offset 
 
-            # detect some circular references
-            if lenpages == 100:
-                for p in pages[:-1]:
-                    if offset == (p if isinstance(p, inttypes) else p.offset):
-                        raise TiffFileError('invalid circular IFD reference')
+            # now obtain the number of pages
+            # ensure that lenpages is a whole number.
+            float_lenpages = (self.parent._fh.size - page.offset)/ offset_unit
+            int_lenpages = (self.parent._fh.size - page.offset)// offset_unit
+
+            if not float_lenpages == int_lenpages:
+                raise ValueError("number of pages is not a whole number! check file_size or offset bytes!")
+
+            _pages =[page.offset + offset_unit*i for i in range(1,int_lenpages)]
+
+            pages.extend(_pages)
+            
+            # now set _indexed True to indicate offsets are all read
+            self._indexted = True
+
+        else:
+            if maxpages is None:
+                maxpages = 2**22
+            while lenpages < maxpages:
+                # read offsets to pages from file until index is reached
+                fh.seek(offset)
+                # skip tags
+                try:
+                    tagno = unpack(tagnoformat, fh.read(tagnosize))[0]
+                    if tagno > 4096:
+                        raise TiffFileError(
+                            'suspicious number of tags: %i' % tagno)
+                except Exception:
+                    log.warning('TiffPages: corrupted tag list of page %i @ %i',
+                                lenpages, offset)
+                    del pages[-1]
+                    lenpages -= 1
+                    self._indexed = True
+                    break
+                self._nextpageoffset = offset + tagnosize + tagno * tagsize
+                fh.seek(self._nextpageoffset)
+
+                # read offset to next page
+                offset = unpack(offsetformat, fh.read(offsetsize))[0]
+                if offset == 0: # flag indicating the last page
+                    self._indexed = True
+                    break
+                if offset >= fh.size:
+                    log.warning('TiffPages: invalid page offset (%i)', offset)
+                    self._indexed = True
+                    break
+
+                pages.append(offset)
+                lenpages += 1
+                if 0 <= index < lenpages:
+                    break
+
+                # detect some circular references
+                if lenpages == 100:
+                    for p in pages[:-1]:
+                        if offset == (p if isinstance(p, inttypes) else p.offset):
+                            raise TiffFileError('invalid circular IFD reference')
 
         if index >= lenpages:
             raise IndexError('index out of range')
 
-        # figure out what this line does
+        # set page given the index number
         page = pages[index]
         fh.seek(page if isinstance(page, inttypes) else page.offset)
 
