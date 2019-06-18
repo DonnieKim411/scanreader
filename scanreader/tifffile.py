@@ -2279,7 +2279,7 @@ class TiffPages(object):
             pages.extend(_pages)
             
             # now set _indexed True to indicate offsets are all read
-            self._indexted = True
+            self._indexed = True
 
         else:
             if maxpages is None:
