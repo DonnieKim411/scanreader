@@ -3311,8 +3311,10 @@ class TiffPages(object):
             self.parent = parent
             fh = parent.filehandle
             self._nextpageoffset = fh.tell()
+            print(self._nextpageoffset)
             offset = struct.unpack(parent.tiff.ifdoffsetformat,
                                    fh.read(parent.tiff.ifdoffsetsize))[0]
+            print(offset)
         elif 'SubIFDs' not in parent.tags:
             self._indexed = True
             return
@@ -3531,6 +3533,12 @@ class TiffPages(object):
                 lenpages -= 1
                 self._indexed = True
                 break
+            print('page number: {}'.format(lenpages))
+            print('offset: {}'.format(offset))
+            print('tagnosize: {}'.format(tagnosize))
+            print('tango: {}'.format(tagno))
+            print('tagsize: {}'.format(tagsize))
+            print('=================================')
             self._nextpageoffset = offset + tagnosize + tagno * tagsize
             fh.seek(self._nextpageoffset)
 
