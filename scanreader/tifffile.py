@@ -2,7 +2,7 @@ from __future__ import division, print_function
 
 __version__ = '2019.5.22'
 __docformat__ = 'restructuredtext en'
-__all__ = ('imwrite', 'imsave', 'imread', 'imshow', 'memmap', 'lsm2bin',
+__all__ = ('imread', 'imshow', 'memmap', 'lsm2bin',
            'TiffFile', 'TiffFileError',
            'FileHandle', 'TiffPage', 'TiffFrame', 'TiffTag', 'TIFF',
            # utility functions used by oiffile, czifile, etc
